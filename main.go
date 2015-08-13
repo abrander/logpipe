@@ -8,6 +8,7 @@ import (
 	"os"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/BurntSushi/toml"
 )
@@ -169,6 +170,18 @@ func main() {
 	for _, pipe := range config.Pipe {
 		wg.Add(1)
 		go listenPipe(pipe, wg)
+	}
+
+	// This is a disgusting hack to keep logpipe running without doing anything
+	// It can be usefull for automated systems that expect a process to always be running
+	if len(config.Pipe) == 0 {
+		go func() {
+			for {
+				time.Sleep(time.Hour)
+			}
+		}()
+
+		select {}
 	}
 
 	// Wait for all workers
